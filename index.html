@@ -7,7 +7,7 @@
     <h1>Coffee Leaves Disease Prediction</h1>
     <form id="predictionForm">
         <label for="photo">Upload a photo:</label>
-        <input type="file" id="photo" name="photo" accept="image/*" required><br><br>
+        <input type="file" id="file" name="photo" accept="image/*" required><br><br>
 
         <label for="model_type">Model Type:</label>
         <select id="model_type" name="model_type" required>
@@ -25,21 +25,40 @@
     <script>
         const predictionForm = document.getElementById('predictionForm');
         const predictionResult = document.getElementById('predictionResult');
-
+    
         predictionForm.addEventListener('submit', async (event) => {
             event.preventDefault();
-
-            const formData = new FormData(predictionForm);
-
+    
+            const formData = new FormData();
+    
+            // Add the "photo" field
+            const photoInput = document.getElementById('file');
+            formData.append('file', photoInput.files[0]);
+    
+            // Add the "model_type" field
+            const modelTypeSelect = document.getElementById('model_type');
+            formData.append('model_type', modelTypeSelect.value);
+    
             try {
                 const response = await fetch('https://coffe-leaves-disease-classification.up.railway.app/predict/', {
                     method: 'POST',
                     body: formData,
                 });
-
+    
                 if (response.ok) {
                     const data = await response.json();
-                    predictionResult.innerHTML = `<p>Result: ${data.prediction.hasil}</p>`;
+    
+                    // Create the formatted result
+                    const formattedResult = `
+                        <p>Miner: ${data.prediction.Miner.toFixed(2)}%</p>
+                        <p>Nodisease: ${data.prediction.Nodisease.toFixed(2)}%</p>
+                        <p>Phoma: ${data.prediction.Phoma.toFixed(2)}%</p>
+                        <p>Rust: ${data.prediction.Rust.toFixed(2)}%</p>
+                        <p>Hasil Klasifikasi: ${data.prediction.hasil}</p>
+                        <p>Lama Prediksi: ${data.prediction.lama_prediksi}</p>
+                    `;
+    
+                    predictionResult.innerHTML = formattedResult;
                 } else {
                     predictionResult.innerHTML = '<p>Failed to make a prediction.</p>';
                 }
@@ -49,5 +68,6 @@
             }
         });
     </script>
+    
 </body>
 </html>
